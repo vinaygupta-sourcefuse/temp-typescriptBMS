@@ -8,41 +8,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-// import {Base} from './Base'
-class Base {
-    constructor(title, author, genre, isbn, price, pubDate) {
-        this.title = this.validate(title);
-        ;
-        this.author = this.validate(author);
-        ;
-        this.genre = genre;
-        this.isbn = isbn;
-        this.price = price;
-        this.pubDate = this.validatePublicationDate(pubDate);
-        this.age = pubDate ? this.validateAge(pubDate) : null;
-    }
-    validate(searchTerm) {
-        const validStringPattern = /^[a-zA-Z0-9\s]+$/;
-        if (searchTerm && !validStringPattern.test(searchTerm)) { // Check if the title is valid  and not empty
-            return 'Special Characters not allowed';
-        }
-        return searchTerm;
-    }
-    validatePublicationDate(newPubDate) {
-        const pubDateObj = new Date(newPubDate);
-        const regex = /^\d{4}-\d{2}-\d{2}$/;
-        if (!pubDateObj || isNaN(pubDateObj.getTime()) || pubDateObj > new Date() || !regex.test(newPubDate)) {
-            const currentDate = new Date();
-            const formattedDate = currentDate.toISOString().split('T')[0]; // Format the date to YYYY-MM-DD
-            return formattedDate; // if the publication date is not provided or provided date is not valid, set it to the current date    
-        }
-        return newPubDate;
-    }
-    validateAge(pubDate) {
-        const year = new Date(pubDate).getFullYear();
-        return new Date().getFullYear() - year;
-    }
-}
+Object.defineProperty(exports, "__esModule", { value: true });
+const Book_1 = require("./Book");
 class BookManage {
     constructor() {
         this.apiUrl = './books.json';
@@ -55,7 +22,7 @@ class BookManage {
         this.sortAscButton = document.getElementById('sortAsc');
         this.sortDescButton = document.getElementById('sortDesc');
         this.categorizedBookListDiv = document.getElementById('bookList1');
-        this.initialize();
+        document.addEventListener('DOMContentLoaded', () => this.initialize());
     }
     initialize() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -72,13 +39,13 @@ class BookManage {
         (_d = this.sortDescButton) === null || _d === void 0 ? void 0 : _d.addEventListener('click', () => this.sortBooks('desc'));
         (_e = this.form) === null || _e === void 0 ? void 0 : _e.addEventListener('submit', (e) => this.addBook(e));
         (_f = document.querySelector('#editBookForm button')) === null || _f === void 0 ? void 0 : _f.addEventListener('click', this.handleEdit.bind(this)); // bind helps to access the this keyword
-        // (window as any).handleEdit = this.handleEdit; // make it globally available because i used type="module" with <script>
+        window.handleEdit = this.handleEdit; // make it globally available because i used type="module" with <script>
         (_g = document.querySelector('#deleteBookForm button')) === null || _g === void 0 ? void 0 : _g.addEventListener('click', () => this.handleDelete()); // no need to call using bind() in arrow function
-        // (window as any).handleDelete = this.handleDelete; // make it globally available because i used type="module" with <script>
+        window.handleDelete = this.handleDelete; // make it globally available because i used type="module" with <script>
         (_h = document.querySelector('#categorizeBooksForm button')) === null || _h === void 0 ? void 0 : _h.addEventListener('click', () => this.handleCategorize()); //   
-        // (window as any).handleCategorize = this.handleCategorize; // make it globally available because i used type="module" with <script>
+        window.handleCategorize = this.handleCategorize; // make it globally available because i used type="module" with <script>
         (_j = document.getElementById('remove')) === null || _j === void 0 ? void 0 : _j.addEventListener('click', () => this.removeCategorizedBooks()); //also working
-        // (window as any).removeCategorizedBooks = this.removeCategorizedBooks; // make it globally available because i used type="module" with <script>
+        window.removeCategorizedBooks = this.removeCategorizedBooks; // make it globally available because i used type="module" with <script>
         (_k = document.getElementById('formContainer')) === null || _k === void 0 ? void 0 : _k.addEventListener('click', (e) => {
             if (e.target && e.target.id === 'formContainer') {
                 this.closeForm();
@@ -96,7 +63,7 @@ class BookManage {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const booksObject = yield response.json();
-                this.books = Object.values(booksObject).map((book) => new Base(book.title, book.author, book.genre, book.isbn, book.price, book.pubDate));
+                this.books = Object.values(booksObject).map((book) => new Book_1.Base(book.title, book.author, book.genre, book.isbn, book.price, book.pubDate));
                 this.originalBooks = [...this.books];
                 toastr.success('Books fetched successfully');
             }
@@ -274,7 +241,7 @@ class BookManage {
             toastr.error('ISBN already exists.');
             return;
         }
-        const book = new Base(title, author, genre, isbn, price, pubDate);
+        const book = new Book_1.Base(title, author, genre, isbn, price, pubDate);
         this.books.push(book);
         this.originalBooks = this.books;
         this.closeForm();
@@ -417,6 +384,7 @@ class BookManage {
         toastr.success('Categorized books removed successfully.');
     }
 }
+new BookManage();
 function showForm(formId) {
     var _a;
     const formContainer = document.getElementById('formContainer');
@@ -424,7 +392,4 @@ function showForm(formId) {
     document.querySelectorAll('#formContainer > div').forEach(div => div.classList.add('hidden')); // hide all the forms within the container
     (_a = document.getElementById(formId)) === null || _a === void 0 ? void 0 : _a.classList.remove('hidden');
 }
-// (window as any).showForm = showForm; // make it globally available because i used type="module" with <script>
-document.addEventListener('DOMContentLoaded', () => {
-    new BookManage();
-});
+window.showForm = showForm; // make it globally available because i used type="module" with <script>

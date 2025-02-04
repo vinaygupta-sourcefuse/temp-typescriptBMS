@@ -1,4 +1,50 @@
-import {Base} from './Book'
+// import {Base} from './Base'
+class Base {
+    title: string;
+    author: string;
+    genre: string;
+    isbn: number;
+    price: number | null;
+    pubDate: string;
+    age: number | null;
+
+    constructor(title: string, author: string, genre: string, isbn: number, price: number | null, pubDate: string) {
+        this.title = this.validate(title);;
+        this.author = this.validate(author);;
+        this.genre = genre;
+        this.isbn = isbn;
+        this.price = price;
+        this.pubDate = this.validatePublicationDate(pubDate); 
+        this.age = pubDate ? this.validateAge(pubDate) : null;
+    }
+   
+    private validate(searchTerm :string): string{
+        const validStringPattern = /^[a-zA-Z0-9\s]+$/;
+
+        if (searchTerm && !validStringPattern.test(searchTerm)) { // Check if the title is valid  and not empty
+          return 'Special Characters not allowed';
+        }
+        return searchTerm;
+    }
+
+    private validatePublicationDate(newPubDate:string):string{
+            const pubDateObj = new Date(newPubDate);
+            const regex = /^\d{4}-\d{2}-\d{2}$/;
+
+            if (!pubDateObj || isNaN(pubDateObj.getTime()) || pubDateObj > new Date() || !regex.test(newPubDate)) {
+              const currentDate = new Date();
+              const formattedDate = currentDate.toISOString().split('T')[0]; // Format the date to YYYY-MM-DD
+              return formattedDate; // if the publication date is not provided or provided date is not valid, set it to the current date    
+            }            
+          return newPubDate;
+    }
+  
+    private validateAge(pubDate: string): number {
+        const year = new Date(pubDate).getFullYear();
+        return new Date().getFullYear() - year;
+    }
+}
+
 
 class BookManage {
     private apiUrl: string = './books.json';
@@ -20,7 +66,7 @@ class BookManage {
         this.sortDescButton = document.getElementById('sortDesc');
         this.categorizedBookListDiv = document.getElementById('bookList1');
 
-        document.addEventListener('DOMContentLoaded', () => this.initialize());
+        this.initialize();
     }
 
     private async initialize(): Promise<void> {
@@ -37,16 +83,16 @@ class BookManage {
         this.form?.addEventListener('submit', (e) => this.addBook(e));
         
         document.querySelector('#editBookForm button')?.addEventListener('click', this.handleEdit.bind(this));  // bind helps to access the this keyword
-        (window as any).handleEdit = this.handleEdit; // make it globally available because i used type="module" with <script>
+        // (window as any).handleEdit = this.handleEdit; // make it globally available because i used type="module" with <script>
         
         document.querySelector('#deleteBookForm button')?.addEventListener('click', () => this.handleDelete()); // no need to call using bind() in arrow function
-        (window as any).handleDelete = this.handleDelete; // make it globally available because i used type="module" with <script>
+        // (window as any).handleDelete = this.handleDelete; // make it globally available because i used type="module" with <script>
     
         document.querySelector('#categorizeBooksForm button')?.addEventListener('click', () => this.handleCategorize());    //   
-        (window as any).handleCategorize = this.handleCategorize; // make it globally available because i used type="module" with <script>
+        // (window as any).handleCategorize = this.handleCategorize; // make it globally available because i used type="module" with <script>
     
         document.getElementById('remove')?.addEventListener('click', () => this.removeCategorizedBooks()); //also working
-        (window as any).removeCategorizedBooks = this.removeCategorizedBooks; // make it globally available because i used type="module" with <script>
+        // (window as any).removeCategorizedBooks = this.removeCategorizedBooks; // make it globally available because i used type="module" with <script>
     
 
         document.getElementById('formContainer')?.addEventListener('click', (e) => {
@@ -419,16 +465,11 @@ class BookManage {
     // Remove categorized books
     private removeCategorizedBooks() :void{
         if(this.categorizedBookListDiv)
-        this.categorizedBookListDiv.innerHTML = `
-        <h2 class="text-xl font-bold text-gray-900 mb-4">Categorized Books</h2>
-        <p class="text-gray-600 italic">No categorized books available.</p>
-        `;
+        this.categorizedBookListDiv.innerHTML = ``;
         this.closeForm();
         toastr.success('Categorized books removed successfully.');
     }
 }
-
-new BookManage();
 
 function showForm(formId: string): void {
     const formContainer = document.getElementById('formContainer');
@@ -436,4 +477,8 @@ function showForm(formId: string): void {
         document.querySelectorAll('#formContainer > div').forEach(div => div.classList.add('hidden')); // hide all the forms within the container
         document.getElementById(formId)?.classList.remove('hidden');
 }
-(window as any).showForm = showForm; // make it globally available because i used type="module" with <script>
+// (window as any).showForm = showForm; // make it globally available because i used type="module" with <script>
+
+document.addEventListener('DOMContentLoaded', () => { //This ensures the BookManage class initializes only after the DOM is fully loaded.
+    new BookManage();
+});
